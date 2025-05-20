@@ -205,8 +205,8 @@ Karena permasalahan merupakan klasifikasi biner (apakah pemesanan dibatalkan ata
 | Model         | Accuracy | Precision |  Recall  | F1 Score |
 |---------------|----------|-----------|----------|----------|
 | Random Forest | **0.89** | **0.89**  | **0.89** | **0.89** |
-| XGBoost       | 0.89     | 0.86      | 0.84     | 0.85     |
-| ANN           | 0.87     | 0.84      | 0.82     | 0.83     |
+| XGBoost       | 0.88     | 0.87      | 0.88     | 0.87     |
+| ANN           | 0.86     | 0.86      | 0.86     | 0.86     |
 
 ### Interpretasi:
 
@@ -225,6 +225,27 @@ Karena permasalahan merupakan klasifikasi biner (apakah pemesanan dibatalkan ata
 - Performa paling rendah di antara ketiganya.
 - Recall class 1 = 0.75 → berarti banyak pembatalan yang gagal dikenali (false negative tinggi).
 - F1 Score = 0.86 → artinya trade-off antara precision dan recall tidak sebaik dua model lain.
+
+### Fitur Penting
+
+| Fitur                            | Random Forest | XGBoost | ANN  |
+|----------------------------------|---------------|---------|------|
+| `deposit_type`                   | 2nd           | 1nd     | 3rd  |
+| `country`                        | 3rd           | 6th     | 1st  |
+| `market_segment`                 | 6th           | 5th     | 5th  |
+| `total_of_special_requests`      | 8th           | 4th     | 2nd  |
+| `previous_cancellations`         | 9th           | 3rd     | 9th  |
+| `lead_time`                      | 1st           | -       | 4th  |
+| `customer_type`                  | -             | 7th     | 7th  |
+| `reserved_room_type`             | -             | 8th     | 8th  |
+| `arrival_date_year`              | -             | 9th     | 6th  |
+| `adr`                            | 4th           | -       | -    |
+| `arrival_date_day_of_month`      | 5th           | -       | -    |
+| `arrival_date_week_number`       | 7th           | -       | -    |
+| `required_car_parking_spaces`    | -             | 2nd     | -    |
+| `stays_in_week_nights`           | 10th          | -       | -    |
+| `previous_bookings_not_canceled` | -             | 10th    | -    |
+| `assigned_room_type`             | -             | -       | 10th |
 
 ## Referensi
 
