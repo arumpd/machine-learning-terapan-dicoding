@@ -188,17 +188,17 @@ Karena permasalahan merupakan klasifikasi biner (apakah pemesanan dibatalkan ata
 
 - **Accuracy**: Proporsi prediksi yang benar terhadap seluruh data.
 - **Precision**: Proporsi prediksi positif yang benar-benar positif.
-  \[
+  $
   \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
-  \]
+  $
 - **Recall**: Proporsi data positif yang berhasil diprediksi dengan benar.
-  \[
+  $
   \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
-  \]
+  $
 - **F1 Score**: Harmonik rata-rata precision dan recall, cocok untuk data tidak seimbang.
-  \[
+  $
   \text{F1} = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}
-  \]
+  $
 
 ### Hasil Evaluasi:
 
