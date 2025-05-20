@@ -2,19 +2,17 @@
 
 ## Domain Proyek
 
-Sudah tidak dapat dimungkiri lagi bahwa pembatalan reservasi oleh customer berdampak kerugian dalam industri penginapan. Dengan meningkatnya jumlah pemesanan online, penting untuk memprediksi apakah reservasi akan dibatalkan, agar pihak hotel bisa mengambil langkah proaktif seperti overbooking atau promosi ulang.
+Sudah tidak dapat dimungkiri lagi bahwa pembatalan reservasi oleh pelanggan merupakan salah satu tantangan utama dalam industri perhotelan yang dapat menimbulkan kerugian finansial dan gangguan operasional. Seiring dengan meningkatnya jumlah pemesanan online, penting untuk memprediksi apakah reservasi akan dibatalkan, agar pihak hotel bisa mengambil langkah proaktif seperti overbooking atau promosi ulang. Oleh karena itu, berbagai penelitian telah dilakukan untuk membangun sistem prediksi yang andal dengan memanfaatkan teknik pembelajaran mesin.
 
-**Rubrik/Kriteria Tambahan (Opsional)**:
-- Jelaskan mengapa dan bagaimana masalah tersebut harus diselesaikan
-- Menyertakan hasil riset terkait atau referensi. Referensi yang diberikan harus berasal dari sumber yang kredibel dan author yang jelas.
-- Format Referensi dapat mengacu pada penulisan sitasi [IEEE](https://journals.ieeeauthorcenter.ieee.org/wp-content/uploads/sites/7/IEEE_Reference_Guide.pdf), [APA](https://www.mendeley.com/guides/apa-citation-guide/) atau secara umum seperti [di sini](https://penerbitdeepublish.com/menulis-buku-membuat-sitasi-dengan-mudah/)
-- Sumber yang bisa digunakan [Scholar](https://scholar.google.com/)
+Salah satu penelitian terbaru dilakukan oleh Bhardwaj et al. (2024), yang mengembangkan sistem prediksi pembatalan reservasi hotel menggunakan berbagai teknik machine learning seperti Logistic Regression, Decision Tree, Random Forest, Gradient Boosting, SVM, dan Artificial Neural Network (ANN). Mereka menunjukkan bahwa ANN menghasilkan performa terbaik dengan akurasi 99,02%, sehingga sistem ini dapat diintegrasikan secara real-time untuk membantu manajemen hotel dalam pengambilan keputusan operasional secara data-driven.[1]
+
+Penelitian serupa juga dilakukan oleh Qureshi dan Menezes (2023), yang menggunakan algoritma J48 Tree, Naive Bayes, Logistic Function, dan Random Forest melalui platform Weka. Hasil penelitian mereka menyimpulkan bahwa algoritma Random Forest adalah yang paling sesuai dalam memprediksi pembatalan berdasarkan metrik evaluasi seperti akurasi, sensitivitas, dan lift.[3]
+
+Sementara itu, Satu et al. (2020) fokus pada analisis performa berbagai teknik machine learning dengan melakukan transformasi fitur dan seleksi fitur terlebih dahulu. Studi mereka menunjukkan bahwa XGBoost merupakan metode yang paling konsisten memberikan hasil terbaik, terutama saat dikombinasikan dengan teknik seleksi fitur berbasis information gain.[2]
+
+Ketiga penelitian tersebut memperkuat pentingnya pendekatan machine learning dalam memahami dan mengelola risiko pembatalan reservasi hotel secara efektif.
 
 ## Business Understanding
-
-Pada bagian ini, kamu perlu menjelaskan proses klarifikasi masalah.
-
-Bagian laporan ini mencakup:
 
 ### Problem Statements
 
@@ -71,10 +69,53 @@ Dataset ini berisi 119390 data berupa informasi pemesanan untuk hotel kota dan h
 - reservation_status : Status terakhir pemesanan, dengan asumsi salah satu dari tiga kategori: Dibatalkan - pemesanan dibatalkan oleh pelanggan; Check-Out - pelanggan telah melakukan check-in namun sudah berangkat; Tidak Datang - pelanggan tidak melakukan check-in dan menginformasikan alasannya kepada hotel
 - reservation_status_date : Tanggal saat status terakhir ditetapkan. Variabel ini dapat digunakan bersama dengan ReservationStatus untuk memahami kapan pemesanan dibatalkan atau kapan pelanggan check-out dari hotel
 
-**Rubrik/Kriteria Tambahan (Opsional)**:
-- Melakukan beberapa tahapan yang diperlukan untuk memahami data, contohnya teknik visualisasi data atau exploratory data analysis.
-
 ### Exploratory Data Analysis
+Untuk memahami karakteristik data secara menyeluruh, dilakukan serangkaian tahapan eksplorasi data (Exploratory Data Analysis/EDA).
+
+#### Distribusi Target (is Canceled)
+Distribusi nilai target `is_canceled` menunjukkan bahwa sebagian besar reservasi tidak dibatalkan (0), namun terdapat proporsi signifikan yang dibatalkan (1). Ketidakseimbangan ini penting untuk diperhatikan dalam pemodelan prediktif.
+
+![Distribusi Target (is Canceled)](assets/distribusi_target_is_canceled.png)
+
+#### Heatmap Korelasi Fitur Numerikal
+Heatmap ini menunjukkan hubungan korelasi antar fitur numerik.
+
+![Heatmap Korelasi Fitur Numerikal](assets/heatmap_korelasi_antar_fitur_numerikal.png)
+
+#### Distribusi Lead Time
+Distribusi `lead_time` menunjukkan bahwa mayoritas reservasi dilakukan dalam waktu singkat sebelum tanggal kedatangan, namun terdapat sejumlah besar outlier pada nilai yang tinggi.
+
+![Distribusi Lead Time](assets/distribusi_lead_time.png)
+
+#### Distribusi ADR (Average Daily Rate)
+Gambar berikut menunjukkan penyebaran nilai `adr`. Terlihat adanya sekelompok outlier dengan nilai ekstrem yang mungkin perlu diproses lebih lanjut.
+
+![Distribusi ADR](assets/distribusi_adr.png)
+
+#### Distribusi Total of Special Requests
+Mayoritas tamu tidak memiliki permintaan khusus, sementara sebagian kecil meminta satu atau dua permintaan tambahan. Semakin banyak permintaan khusus, umumnya menunjukkan niat menginap yang lebih tinggi.
+
+![Distribusi Total of Special Requests](assets/distribusi_total_of_special_requests.png)
+
+#### Distribusi Jenis Hotel
+Dataset mencakup dua jenis hotel: City Hotel dan Resort Hotel. City Hotel lebih mendominasi dalam jumlah reservasi, namun keduanya perlu dianalisis secara terpisah karena karakteristik pengunjung dan tingkat pembatalannya bisa berbeda.
+
+![Distribusi Jenis Hotel](assets/distribusi_hotel.png)
+
+#### Distribusi Meal
+Sebagian besar pelanggan memilih paket "BB" (bed and breakfast), dengan variasi kecil pada jenis meal lainnya. Preferensi meal dapat merefleksikan motivasi kunjungan dan dapat berpengaruh terhadap pembatalan.
+
+![Distribusi Meal](assets/distribusi_meal.png)
+
+#### Distribusi Channel
+Kanal distribusi "TA/TO" (travel agents/tour operators) paling sering digunakan, diikuti oleh kanal langsung. Kanal distribusi bisa menunjukkan tingkat loyalitas atau kepastian pelanggan.
+
+![Distribusi Channel](assets/distribusi_channel.png)
+
+#### Distribusi Market Segment
+Sebagian besar reservasi berasal dari segmen "Online TA", yang menunjukkan dominasi pemesanan online. Segmentasi ini penting untuk analisis risiko karena pelanggan online cenderung memiliki perilaku pembatalan yang berbeda dibandingkan pelanggan korporat atau offline.
+
+![Distribusi Market Segment](assets/distribusi_market_segment.png)
 
 ## Data Preparation
 Pada bagian ini Anda menerapkan dan menyebutkan teknik data preparation yang dilakukan. Teknik yang digunakan pada notebook dan laporan harus berurutan.
@@ -102,6 +143,14 @@ Ingatlah, metrik evaluasi yang digunakan harus sesuai dengan konteks data, probl
 
 **Rubrik/Kriteria Tambahan (Opsional)**: 
 - Menjelaskan formula metrik dan bagaimana metrik tersebut bekerja.
+
+## Referensi
+
+[1] A. Bhardwaj, T. Yadav, and R. Chaudhary, "Predicting Hotel Booking Cancellations using Machine Learning Techniques," *2024 15th International Conference on Computing Communication and Networking Technologies (ICCCNT)*, Kamand, India, 2024, pp. 1–6. [doi:10.1109/ICCCNT61001.2024.10725148](https://doi.org/10.1109/ICCCNT61001.2024.10725148)
+
+[2] M. S. Satu, K. Ahammed, and M. Z. Abedin, "Performance Analysis of Machine Learning Techniques to Predict Hotel booking Cancellations in Hospitality Industry," *2020 23rd International Conference on Computer and Information Technology (ICCIT)*, Dhaka, Bangladesh, 2020, pp. 1–6. [doi:10.1109/ICCIT51783.2020.9392648](https://doi.org/10.1109/ICCIT51783.2020.9392648)
+
+[3] S. Qureshi and J. Menezes, "Prediction of hotel booking cancellation using machine learning algorithms," *7th IET Smart Cities Symposium (SCS 2023)*, Hybrid Conference, Bahrain, 2023, pp. 140–145. [doi:10.1049/icp.2024.0914](https://doi.org/10.1049/icp.2024.0914)
 
 **---Ini adalah bagian akhir laporan---**
 
