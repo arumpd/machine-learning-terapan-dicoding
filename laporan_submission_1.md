@@ -4,11 +4,11 @@
 
 Sudah tidak dapat dimungkiri lagi bahwa pembatalan reservasi oleh pelanggan merupakan salah satu tantangan utama dalam industri perhotelan yang dapat menimbulkan kerugian finansial dan gangguan operasional. Seiring dengan meningkatnya jumlah pemesanan online, penting untuk memprediksi apakah reservasi akan dibatalkan, agar pihak hotel bisa mengambil langkah proaktif seperti overbooking atau promosi ulang. Oleh karena itu, berbagai penelitian telah dilakukan untuk membangun sistem prediksi yang andal dengan memanfaatkan teknik pembelajaran mesin.
 
-Salah satu penelitian terbaru dilakukan oleh Bhardwaj et al. (2024), yang mengembangkan sistem prediksi pembatalan reservasi hotel menggunakan berbagai teknik machine learning seperti Logistic Regression, Decision Tree, Random Forest, Gradient Boosting, SVM, dan Artificial Neural Network (ANN). Mereka menunjukkan bahwa ANN menghasilkan performa terbaik dengan akurasi 99,02%, sehingga sistem ini dapat diintegrasikan secara real-time untuk membantu manajemen hotel dalam pengambilan keputusan operasional secara data-driven.[1]
+Salah satu penelitian terbaru dilakukan oleh Bhardwaj et al. (2024), yang mengembangkan sistem prediksi pembatalan reservasi hotel menggunakan berbagai teknik machine learning seperti Logistic Regression, Decision Tree, Random Forest, Gradient Boosting, SVM, dan Artificial Neural Network (ANN). Mereka menunjukkan bahwa ANN menghasilkan performa terbaik dengan akurasi 99,02%, sehingga sistem ini dapat diintegrasikan secara real-time untuk membantu manajemen hotel dalam pengambilan keputusan operasional secara data-driven. [1]
 
-Penelitian serupa juga dilakukan oleh Qureshi dan Menezes (2023), yang menggunakan algoritma J48 Tree, Naive Bayes, Logistic Function, dan Random Forest melalui platform Weka. Hasil penelitian mereka menyimpulkan bahwa algoritma Random Forest adalah yang paling sesuai dalam memprediksi pembatalan berdasarkan metrik evaluasi seperti akurasi, sensitivitas, dan lift.[3]
+Penelitian serupa juga dilakukan oleh Qureshi dan Menezes (2023), yang menggunakan algoritma J48 Tree, Naive Bayes, Logistic Function, dan Random Forest melalui platform Weka. Hasil penelitian mereka menyimpulkan bahwa algoritma Random Forest adalah yang paling sesuai dalam memprediksi pembatalan berdasarkan metrik evaluasi seperti akurasi, sensitivitas, dan lift. [3]
 
-Sementara itu, Satu et al. (2020) fokus pada analisis performa berbagai teknik machine learning dengan melakukan transformasi fitur dan seleksi fitur terlebih dahulu. Studi mereka menunjukkan bahwa XGBoost merupakan metode yang paling konsisten memberikan hasil terbaik, terutama saat dikombinasikan dengan teknik seleksi fitur berbasis information gain.[2]
+Sementara itu, Satu et al. (2020) fokus pada analisis performa berbagai teknik machine learning dengan melakukan transformasi fitur dan seleksi fitur terlebih dahulu. Studi mereka menunjukkan bahwa XGBoost merupakan metode yang paling konsisten memberikan hasil terbaik, terutama saat dikombinasikan dengan teknik seleksi fitur berbasis information gain. [2]
 
 Ketiga penelitian tersebut memperkuat pentingnya pendekatan machine learning dalam memahami dan mengelola risiko pembatalan reservasi hotel secara efektif.
 
@@ -118,31 +118,113 @@ Sebagian besar reservasi berasal dari segmen "Online TA", yang menunjukkan domin
 ![Distribusi Market Segment](assets/distribusi_market_segment.png)
 
 ## Data Preparation
-Pada bagian ini Anda menerapkan dan menyebutkan teknik data preparation yang dilakukan. Teknik yang digunakan pada notebook dan laporan harus berurutan.
+Pada tahap ini, dilakukan serangkaian teknik data preparation untuk memastikan data bersih, relevan, dan siap digunakan untuk proses pemodelan. Berikut adalah tahapan yang dilakukan:
 
-**Rubrik/Kriteria Tambahan (Opsional)**: 
-- Menjelaskan proses data preparation yang dilakukan
-- Menjelaskan alasan mengapa diperlukan tahapan data preparation tersebut.
+1. **Pemuatan Dataset:**
+   Dataset dimuat menggunakan `kagglehub` dari repositori `jessemostipak/hotel-booking-demand`.
+
+2. **Eksplorasi Awal:**
+   - Meninjau struktur data (`df.info()` dan `df.describe()`).
+   - Meninjau distribusi target (`is_canceled`) untuk melihat keseimbangan kelas.
+   - Visualisasi korelasi antar fitur numerik dan distribusi frekuensi fitur numerik serta kategorikal berdasarkan target.
+
+3. **Penanganan Missing Values:**
+   - Kolom `children` diisi dengan 0 karena kemungkinan besar merupakan input kosong (tanpa anak).
+   - Kolom `country` diisi dengan modus (nilai yang paling sering muncul) karena nilai tersebut kemungkinan besar representatif.
+
+4. **Penghapusan Kolom Tidak Relevan:**
+   Kolom `agent`, `company`, `reservation_status`, dan `reservation_status_date` dihapus karena:
+   - Memiliki banyak nilai kosong (agent dan company).
+   - Tidak tersedia saat prediksi dilakukan (data "status" hanya muncul setelah booking terjadi).
+
+5. **Penghapusan Duplikasi:**
+   Baris duplikat dihapus untuk menghindari bias.
+
+6. **Membuat Fitur Baru:**
+   Fitur `total_guests` dibuat dari penjumlahan `adults`, `children`, dan `babies`. Baris dengan total tamu = 0 dibuang karena tidak logis.
+
+7. **Encoding Fitur Kategorikal:**
+   Label Encoding dilakukan terhadap fitur bertipe objek untuk mengubah kategori menjadi nilai numerik.
+
+8. **Normalisasi:**
+   `StandardScaler` digunakan untuk menormalkan fitur numerik agar skala data seragam, terutama penting untuk model ANN.
+
+9. **Penanganan Outlier:**
+   Outlier dideteksi dan dibatasi (winsorizing) menggunakan batas IQR (interquartile range) untuk fitur `lead_time`, `adr`, dan `total_of_special_requests`. Tujuannya untuk mengurangi dampak ekstrem terhadap model.
+
+10. **Split Data:**
+    Data dibagi menjadi 80% data latih dan 20% data uji menggunakan `train_test_split` dengan stratifikasi terhadap target untuk menjaga distribusi kelas.
 
 ## Modeling
-Tahapan ini membahas mengenai model machine learning yang digunakan untuk menyelesaikan permasalahan. Anda perlu menjelaskan tahapan dan parameter yang digunakan pada proses pemodelan.
+Tiga model digunakan dan dibandingkan dalam proyek ini: Random Forest, XGBoost, dan Artificial Neural Network (ANN).
 
-**Rubrik/Kriteria Tambahan (Opsional)**: 
-- Menjelaskan kelebihan dan kekurangan dari setiap algoritma yang digunakan.
-- Jika menggunakan satu algoritma pada solution statement, lakukan proses improvement terhadap model dengan hyperparameter tuning. **Jelaskan proses improvement yang dilakukan**.
-- Jika menggunakan dua atau lebih algoritma pada solution statement, maka pilih model terbaik sebagai solusi. **Jelaskan mengapa memilih model tersebut sebagai model terbaik**.
+### 1. Random Forest Classifier
+- Parameter: `n_estimators=100`, `random_state=42`.
+- Model ini digunakan karena dapat menangani data dengan fitur numerik dan kategorikal, serta tahan terhadap outlier.
+- Keunggulan: Mudah digunakan, robust terhadap overfitting jika jumlah pohon cukup banyak.
+- Kelemahan: Interpretasi terbatas, training bisa lambat untuk dataset besar.
+
+### 2. XGBoost Classifier
+- Parameter: `use_label_encoder=False`, `eval_metric='logloss'`.
+- Model ini adalah boosting tree yang terkenal dengan akurasi tinggi.
+- Keunggulan: Kemampuan generalisasi tinggi, performa kompetitif di banyak kasus klasifikasi.
+- Kelemahan: Rentan overfitting jika tidak dituning, waktu training lebih lama dibanding Random Forest.
+
+### 3. Artificial Neural Network (ANN)
+- Arsitektur: 4 hidden layers (256 → 128 → 64 → 32) dengan aktivasi ReLU, dropout, dan batch normalization.
+- Output layer: sigmoid (karena binary classification).
+- Optimizer: Adam dengan learning rate 0.001.
+- EarlyStopping digunakan untuk menghindari overfitting.
+- Keunggulan: Kemampuan menangkap pola kompleks.
+- Kelemahan: Membutuhkan banyak data, sensitif terhadap skala dan noise.
+
+### Pemilihan Model Terbaik
+Setelah dibandingkan berdasarkan metrik evaluasi (lihat bagian Evaluasi), **Random Forest** dipilih sebagai model terbaik karena menghasilkan skor **F1 score** yang tinggi secara konsisten dan performa seimbang antara precision dan recall. Model ini juga menunjukkan pentingnya fitur-fitur dengan lebih jelas, yang membantu interpretabilitas.
 
 ## Evaluation
-Pada bagian ini anda perlu menyebutkan metrik evaluasi yang digunakan. Lalu anda perlu menjelaskan hasil proyek berdasarkan metrik evaluasi yang digunakan.
 
-Sebagai contoh, Anda memiih kasus klasifikasi dan menggunakan metrik **akurasi, precision, recall, dan F1 score**. Jelaskan mengenai beberapa hal berikut:
-- Penjelasan mengenai metrik yang digunakan
-- Menjelaskan hasil proyek berdasarkan metrik evaluasi
+### Metrik Evaluasi:
+Karena permasalahan merupakan klasifikasi biner (apakah pemesanan dibatalkan atau tidak), digunakan metrik berikut:
 
-Ingatlah, metrik evaluasi yang digunakan harus sesuai dengan konteks data, problem statement, dan solusi yang diinginkan.
+- **Accuracy**: Proporsi prediksi yang benar terhadap seluruh data.
+- **Precision**: Proporsi prediksi positif yang benar-benar positif.
+  \[
+  \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
+  \]
+- **Recall**: Proporsi data positif yang berhasil diprediksi dengan benar.
+  \[
+  \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
+  \]
+- **F1 Score**: Harmonik rata-rata precision dan recall, cocok untuk data tidak seimbang.
+  \[
+  \text{F1} = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}
+  \]
 
-**Rubrik/Kriteria Tambahan (Opsional)**: 
-- Menjelaskan formula metrik dan bagaimana metrik tersebut bekerja.
+### Hasil Evaluasi:
+
+| Model         | Accuracy | Precision |  Recall  | F1 Score |
+|---------------|----------|-----------|----------|----------|
+| Random Forest | **0.89** | **0.89**  | **0.89** | **0.89** |
+| XGBoost       | 0.89     | 0.86      | 0.84     | 0.85     |
+| ANN           | 0.87     | 0.84      | 0.82     | 0.83     |
+
+### Interpretasi:
+
+#### Random Forest
+- F1 Score tertinggi (0.89) → artinya seimbang antara precision dan recall.
+- Precision class 1 = 0.88 → 88% prediksi pembatalan benar.
+- Recall class 1 = 0.80 → hanya 80% dari seluruh pembatalan berhasil diprediksi.
+- Ini model paling stabil dan andal di semua metrik.
+
+#### XGBoost
+- Sedikit lebih rendah dari Random Forest di semua metrik.
+- Recall class 1 = 0.80 dan precision class 1 = 0.85 → cukup bagus.
+- Meskipun lebih rendah sedikit, XGBoost bisa lebih unggul setelah tuning lebih lanjut.
+
+#### ANN
+- Performa paling rendah di antara ketiganya.
+- Recall class 1 = 0.75 → berarti banyak pembatalan yang gagal dikenali (false negative tinggi).
+- F1 Score = 0.86 → artinya trade-off antara precision dan recall tidak sebaik dua model lain.
 
 ## Referensi
 
@@ -151,9 +233,3 @@ Ingatlah, metrik evaluasi yang digunakan harus sesuai dengan konteks data, probl
 [2] M. S. Satu, K. Ahammed, and M. Z. Abedin, "Performance Analysis of Machine Learning Techniques to Predict Hotel booking Cancellations in Hospitality Industry," *2020 23rd International Conference on Computer and Information Technology (ICCIT)*, Dhaka, Bangladesh, 2020, pp. 1–6. [doi:10.1109/ICCIT51783.2020.9392648](https://doi.org/10.1109/ICCIT51783.2020.9392648)
 
 [3] S. Qureshi and J. Menezes, "Prediction of hotel booking cancellation using machine learning algorithms," *7th IET Smart Cities Symposium (SCS 2023)*, Hybrid Conference, Bahrain, 2023, pp. 140–145. [doi:10.1049/icp.2024.0914](https://doi.org/10.1049/icp.2024.0914)
-
-**---Ini adalah bagian akhir laporan---**
-
-_Catatan:_
-- _Anda dapat menambahkan gambar, kode, atau tabel ke dalam laporan jika diperlukan. Temukan caranya pada contoh dokumen markdown di situs editor [Dillinger](https://dillinger.io/), [Github Guides: Mastering markdown](https://guides.github.com/features/mastering-markdown/), atau sumber lain di internet. Semangat!_
-- Jika terdapat penjelasan yang harus menyertakan code snippet, tuliskan dengan sewajarnya. Tidak perlu menuliskan keseluruhan kode project, cukup bagian yang ingin dijelaskan saja.
