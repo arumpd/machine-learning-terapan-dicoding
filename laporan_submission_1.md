@@ -38,49 +38,65 @@ Dataset ini berisi 119.390 data dengan 32 fitur yang berupa informasi pemesanan 
 Beberapa poin penting mengenai kondisi awal dataset terebut:
 - **Tipe Data**
   - 20 Fitur Numerikal, yaitu:
-    -  is_canceled
-    -  lead_time
-    -  arrival_date_year
-    -  arrival_date_week_number
-    -  arrival_date_day_of_month
-    -  stays_in_weekend_nights
-    -  stays_in_week_nights
-    -  adults
-    -  children
-    -  babies
-    -  is_repeated_guest
-    -  previous_cancellations
-    -  previous_bookings_not_canceled
-    -  booking_changes
-    -  agent
-    -  company
-    -  days_in_waiting_list
-    -  adr
-    -  required_car_parking_spaces
-    -  total_of_special_requests
+    -  ```is_canceled```
+    -  ```lead_time```
+    -  ```arrival_date_year```
+    -  ```arrival_date_week_number```
+    -  ```arrival_date_day_of_month```
+    -  ```stays_in_weekend_nights```
+    -  ```stays_in_week_nights```
+    -  ```adults```
+    -  ```children```
+    -  ```babies```
+    -  ```is_repeated_guest```
+    -  ```previous_cancellations```
+    -  ```previous_bookings_not_canceled```
+    -  ```booking_changes```
+    -  ```agent```
+    -  ```company```
+    -  ```days_in_waiting_list```
+    -  ```adr```
+    -  ```required_car_parking_spaces```
+    -  ```total_of_special_requests```
   - 12 Fitur Kategorikal, yaitu:
-    -  hotel
-    -  arrival_date_month
-    -  meal
-    -  country
-    -  market_segment
-    -  distribution_channel
-    -  reserved_room_type
-    -  assigned_room_type
-    -  deposit_type
-    -  customer_type
-    -  reservation_status 
-    -  reservation_status_date
+    -  ```hotel```
+    -  ```arrival_date_month```
+    -  ```meal```
+    -  ```country```
+    -  ```market_segment```
+    -  ```distribution_channel```
+    -  ```reserved_room_type```
+    -  ```assigned_room_type```
+    -  ```deposit_type```
+    -  ```customer_type```
+    -  ```reservation_status ```
+    -  ```reservation_status_date```
+
 - **Missing Values**
   - Kolom ```agent``` dan ```company``` memiliki cukup banyak nilai kosong, sehingga dipertimbangkan untuk dihapus.
   - Kolom ```children``` dan ```country``` memiliki nilai kosong yang cukup rendah. Karena umumnya lebih sering tamu jarang membawa anak, maka nilai kosong pada kolom ```children``` akan diisi nol. Sementara nilai kosong pada kolom ```country``` akan diisi oleh nilai dengan jumlah terbanyak.
+
 - **Data Duplikat**
   
   Ditemukan sebanyak 3.195 baris duplikat dalam data.
 
 - **Data Outlier**
 
-  Ditemukan bahwa outlier
+  Ditemukan adanya outlier pada beberapa fitur, yaitu:
+  - ```lead_time```: 3005
+  - ```stays_in_weekend_nights```: 265
+  - ```stays_in_week_nights```: 3354
+  - ```adults```: 29710
+  - ```children```: 8590
+  - ```babies```: 917
+  - ```is_repeated_guest```: 3810
+  - ```previous_cancellations```: 6484
+  - ```previous_bookings_not_canceled```: 3620
+  - ```booking_changes```: 18076
+  - ```days_in_waiting_list```: 3698
+  - ```adr```: 3793
+  - ```required_car_parking_spaces```: 7416
+  - ```total_of_special_requests```: 2877
 
 ### Variabel-variabel pada Hotel booking demand dataset adalah sebagai berikut:
 - hotel : Jenis Penginapan (H1 = Hotel Resor or H2 = Hotel Kota)
