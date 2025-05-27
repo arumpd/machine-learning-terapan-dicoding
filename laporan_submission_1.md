@@ -140,12 +140,12 @@ Untuk memahami karakteristik data secara menyeluruh, dilakukan serangkaian tahap
 #### Distribusi Target (is Canceled)
 Distribusi nilai target `is_canceled` menunjukkan bahwa sebagian besar reservasi tidak dibatalkan (0), namun terdapat proporsi signifikan yang dibatalkan (1). Ketidakseimbangan ini penting untuk diperhatikan dalam pemodelan prediktif.
 
-![Distribusi Target (is Canceled)](assets/distribusi_target_is_canceled.png)
+![Distribusi Target (is Canceled)](https://github.com/user-attachments/assets/6b5637b8-6ef7-4587-8c99-62b1c61db7ca)
 
 #### Heatmap Korelasi Fitur Numerikal
 Heatmap ini menunjukkan hubungan korelasi antar fitur numerik.
 
-![Heatmap Korelasi Fitur Numerikal](assets/heatmap_korelasi_antar_fitur_numerikal.png)
+![Heatmap Korelasi Fitur Numerikal](https://github.com/user-attachments/assets/50674df8-0491-4e86-bb82-d74dd8b48bee)
 
 #### Distribusi Lead Time
 Distribusi `lead_time` menunjukkan bahwa mayoritas reservasi dilakukan dalam waktu singkat sebelum tanggal kedatangan, namun terdapat sejumlah besar outlier pada nilai yang tinggi.
