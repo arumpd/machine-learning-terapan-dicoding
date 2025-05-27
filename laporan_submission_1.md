@@ -147,40 +147,51 @@ Heatmap ini menunjukkan hubungan korelasi antar fitur numerik.
 
 ![Heatmap Korelasi Fitur Numerikal](https://github.com/user-attachments/assets/50674df8-0491-4e86-bb82-d74dd8b48bee)
 
-#### Distribusi Lead Time
+#### Boxplot Outlier
+Visualisasi ini bertujuan untuk melihat distribusi dan deteksi outlier pada setiap fitur numerik yang telah teridentifikasi mengandung outlier.
+
+![Boxplot_Outlier](https://github.com/user-attachments/assets/9ae5cd5e-6139-4378-ab72-b6a043b33846)
+
+#### Distribusi Fitur Numerik
+Berikut fitur-fitur numerik yang dirasa penting.
+
+##### Distribusi Lead Time
 Distribusi `lead_time` menunjukkan bahwa mayoritas reservasi dilakukan dalam waktu singkat sebelum tanggal kedatangan, namun terdapat sejumlah besar outlier pada nilai yang tinggi.
 
-![Distribusi Lead Time](assets/distribusi_lead_time.png)
+![Distribusi Lead Time](https://github.com/user-attachments/assets/82848e2b-012a-4131-a027-2603300cdb83)
 
-#### Distribusi ADR (Average Daily Rate)
+##### Distribusi ADR (Average Daily Rate)
 Gambar berikut menunjukkan penyebaran nilai `adr`. Terlihat adanya sekelompok outlier dengan nilai ekstrem yang mungkin perlu diproses lebih lanjut.
 
-![Distribusi ADR](assets/distribusi_adr.png)
+![Distribusi ADR](https://github.com/user-attachments/assets/f6ae8ecc-8b10-49d6-9ad1-9bc040fd829f)
 
-#### Distribusi Total of Special Requests
+##### Distribusi Total of Special Requests
 Mayoritas tamu tidak memiliki permintaan khusus, sementara sebagian kecil meminta satu atau dua permintaan tambahan. Semakin banyak permintaan khusus, umumnya menunjukkan niat menginap yang lebih tinggi.
 
-![Distribusi Total of Special Requests](assets/distribusi_total_of_special_requests.png)
+![Distribusi Total of Special Requests](https://github.com/user-attachments/assets/8e8ae0e2-523f-4bd3-8971-6c268b8e9d92)
 
-#### Distribusi Jenis Hotel
+#### Distribusi Fitur Kategorikal
+Berikut fitur-fitur kategorikal yang dirasa penting.
+
+##### Distribusi Jenis Hotel
 Dataset mencakup dua jenis hotel: City Hotel dan Resort Hotel. City Hotel lebih mendominasi dalam jumlah reservasi, namun keduanya perlu dianalisis secara terpisah karena karakteristik pengunjung dan tingkat pembatalannya bisa berbeda.
 
-![Distribusi Jenis Hotel](assets/distribusi_hotel.png)
+![Distribusi Jenis Hotel](https://github.com/user-attachments/assets/ca0e7a82-6a1a-49a0-bcd0-8674c785516d)
 
-#### Distribusi Meal
+##### Distribusi Meal
 Sebagian besar pelanggan memilih paket "BB" (bed and breakfast), dengan variasi kecil pada jenis meal lainnya. Preferensi meal dapat merefleksikan motivasi kunjungan dan dapat berpengaruh terhadap pembatalan.
 
-![Distribusi Meal](assets/distribusi_meal.png)
+![Distribusi Meal](https://github.com/user-attachments/assets/e5bf3c14-8eb1-41e7-b9d3-8c1733ba7f63)
 
-#### Distribusi Channel
+##### Distribusi Channel
 Kanal distribusi "TA/TO" (travel agents/tour operators) paling sering digunakan, diikuti oleh kanal langsung. Kanal distribusi bisa menunjukkan tingkat loyalitas atau kepastian pelanggan.
 
-![Distribusi Channel](assets/distribusi_channel.png)
+![Distribusi Channel](https://github.com/user-attachments/assets/9176587c-14ef-454f-b9f9-c07feb597322)
 
-#### Distribusi Market Segment
+##### Distribusi Market Segment
 Sebagian besar reservasi berasal dari segmen "Online TA", yang menunjukkan dominasi pemesanan online. Segmentasi ini penting untuk analisis risiko karena pelanggan online cenderung memiliki perilaku pembatalan yang berbeda dibandingkan pelanggan korporat atau offline.
 
-![Distribusi Market Segment](assets/distribusi_market_segment.png)
+![Distribusi Market Segment](https://github.com/user-attachments/assets/e61e268c-db5e-459d-8679-42d25bda6416)
 
 ## Data Preparation
 Pada tahap ini, dilakukan serangkaian teknik data preparation untuk memastikan data bersih, relevan, dan siap digunakan untuk proses pemodelan. Berikut adalah tahapan yang dilakukan:
