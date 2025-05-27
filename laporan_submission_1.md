@@ -185,66 +185,107 @@ Sebagian besar reservasi berasal dari segmen "Online TA", yang menunjukkan domin
 ## Data Preparation
 Pada tahap ini, dilakukan serangkaian teknik data preparation untuk memastikan data bersih, relevan, dan siap digunakan untuk proses pemodelan. Berikut adalah tahapan yang dilakukan:
 
-1. **Pemuatan Dataset:**
-   Dataset dimuat menggunakan `kagglehub` dari repositori `jessemostipak/hotel-booking-demand`.
+1. **Penghapusan Duplikasi:**
+   Baris duplikat dihapus untuk menghindari bias.
 
-2. **Eksplorasi Awal:**
-   - Meninjau struktur data (`df.info()` dan `df.describe()`).
-   - Meninjau distribusi target (`is_canceled`) untuk melihat keseimbangan kelas.
-   - Visualisasi korelasi antar fitur numerik dan distribusi frekuensi fitur numerik serta kategorikal berdasarkan target.
+2. **Penghapusan Kolom Tidak Relevan:**
+   - `agent`, karena banyak nilai kosong.
+   - `company`, karena banyak nilai kosong.
+   - `arrival_date_year`, karena umumnya tidak terlalu berkontribusi pada pembatalan.
+   - `arrival_date_week_number`, karena umumnya tidak terlalu berkontribusi pada pembatalan.
+   - `arrival_date_day_of_month`, karena umumnya tidak terlalu berkontribusi pada pembatalan.
+   - `booking_changes`, karena bisa menyebabkan kebocoran (data leakage).
 
 3. **Penanganan Missing Values:**
    - Kolom `children` diisi dengan 0 karena kemungkinan besar merupakan input kosong (tanpa anak).
    - Kolom `country` diisi dengan modus (nilai yang paling sering muncul) karena nilai tersebut kemungkinan besar representatif.
 
-4. **Penghapusan Kolom Tidak Relevan:**
-   Kolom `agent`, `company`, `reservation_status`, dan `reservation_status_date` dihapus karena:
-   - Memiliki banyak nilai kosong (agent dan company).
-   - Tidak tersedia saat prediksi dilakukan (data "status" hanya muncul setelah booking terjadi).
+3. **Penanganan Outlier:**
+   - Outlier pada `adults` yang memiliki nilai di atas 10 ditangani dengan drop karena dirasa tidak masuk akal.
+   - Outlier dari `lead_time`, `adr`, dan `days_in_waiting_list` ditangani dengan winsorizing karena nilainya masih relevan secara kontekstual.
+   - Outlier dari `stays_in_week_nights`, `stays_in_weekend_nights`, `adults`, `children`, dan `babies` ditangani dengan threshold IQR karena distribusi sangat skewed dan banyak nol sehingga digunakan capping untuk mempertahankan data.
 
-5. **Penghapusan Duplikasi:**
-   Baris duplikat dihapus untuk menghindari bias.
+4. **Membuat Fitur Baru:**
+   - Fitur `total_guests` dibuat dari penjumlahan `adults`, `children`, dan `babies`. Baris dengan total tamu = 0 dibuang karena tidak logis.
+   - Fitur `room_type_changed` dibuat dari perbedaan tipe kamar yang direservasi dan diberikan berbeda.
 
-6. **Membuat Fitur Baru:**
-   Fitur `total_guests` dibuat dari penjumlahan `adults`, `children`, dan `babies`. Baris dengan total tamu = 0 dibuang karena tidak logis.
-
-7. **Encoding Fitur Kategorikal:**
+5. **Encoding Fitur Kategorikal:**
    Label Encoding dilakukan terhadap fitur bertipe objek untuk mengubah kategori menjadi nilai numerik.
 
-8. **Normalisasi:**
+6. **Definisi fitur dan label:**
+   Menggabungkan fitur ke `X` dan meletakkan label ke `y`.
+
+7. **Scaling data:**
    `StandardScaler` digunakan untuk menormalkan fitur numerik agar skala data seragam, terutama penting untuk model ANN.
 
-9. **Penanganan Outlier:**
-   Outlier dideteksi dan dibatasi (winsorizing) menggunakan batas IQR (interquartile range) untuk fitur `lead_time`, `adr`, dan `total_of_special_requests`. Tujuannya untuk mengurangi dampak ekstrem terhadap model.
-
-10. **Split Data:**
-    Data dibagi menjadi 80% data latih dan 20% data uji menggunakan `train_test_split` dengan stratifikasi terhadap target untuk menjaga distribusi kelas.
+8. **Split Data:**
+   Data dibagi menjadi 80% data latih dan 20% data uji menggunakan `train_test_split` dengan stratifikasi terhadap target untuk menjaga distribusi kelas.
 
 ## Modeling
-Tiga model digunakan dan dibandingkan dalam proyek ini: Random Forest, XGBoost, dan Artificial Neural Network (ANN).
+Pada tahap ini, tiga algoritma machine learning yang berbeda diimplementasikan dan dievaluasi untuk memprediksi pembatalan reservasi hotel. Fitur-fitur yang telah dipersiapkan pada tahap Data Preparation digunakan sebagai input untuk model-model ini. Variabel target adalah `is_canceled`.
 
 ### 1. Random Forest Classifier
-- Parameter: `n_estimators=100`, `random_state=42`.
-- Model ini digunakan karena dapat menangani data dengan fitur numerik dan kategorikal, serta tahan terhadap outlier.
-- Keunggulan: Mudah digunakan, robust terhadap overfitting jika jumlah pohon cukup banyak.
-- Kelemahan: Interpretasi terbatas, training bisa lambat untuk dataset besar.
+Random Forest adalah algoritma *ensemble learning* yang bekerja dengan membangun sejumlah besar pohon keputusan (decision trees) pada berbagai sub-sampel dari dataset dan menggunakan modus (untuk klasifikasi) dari prediksi masing-masing pohon untuk prediksi akhir.
+
+- **Cara Kerja:**
+    1.  Membuat *bootstrap samples* (sampel acak dengan penggantian) dari data latih.
+    2.  Untuk setiap *bootstrap sample*, sebuah pohon keputusan dibangun. Saat membangun pohon, pada setiap simpul (node), hanya sebagian kecil fitur yang dipilih secara acak untuk dipertimbangkan dalam mencari pemisahan terbaik.
+    3.  Setelah semua pohon dibangun, untuk prediksi data baru, setiap pohon memberikan klasifikasi. Kelas yang paling banyak dipilih (voting mayoritas) oleh pohon-pohon menjadi prediksi akhir dari Random Forest.
+- **Parameter Utama yang Digunakan:**
+    - `n_estimators=100`: Jumlah pohon keputusan yang dibangun dalam hutan.
+    - `random_state=42`: Untuk memastikan hasil yang dapat direproduksi.
+- **Kelebihan:** Cukup robust terhadap *overfitting*, mampu menangani data dengan baik, dan dapat memberikan ukuran *feature importance*.
+- **Kekurangan:** Bisa menjadi *black box* (sulit diinterpretasi secara detail bagaimana keputusan dibuat).
 
 ### 2. XGBoost Classifier
-- Parameter: `use_label_encoder=False`, `eval_metric='logloss'`.
-- Model ini adalah boosting tree yang terkenal dengan akurasi tinggi.
-- Keunggulan: Kemampuan generalisasi tinggi, performa kompetitif di banyak kasus klasifikasi.
-- Kelemahan: Rentan overfitting jika tidak dituning, waktu training lebih lama dibanding Random Forest.
+XGBoost (Extreme Gradient Boosting) adalah implementasi yang dioptimalkan dari algoritma *gradient boosting*. Ini adalah teknik *ensemble* yang kuat dan sering digunakan untuk mencapai performa tinggi.
+
+- **Cara Kerja:**
+    1.  XGBoost membangun model (pohon keputusan) secara aditif dan sekuensial.
+    2.  Model pertama dilatih pada seluruh data. Kemudian, model kedua dilatih untuk memperbaiki kesalahan (residu) dari model pertama. Proses ini berlanjut, di mana setiap pohon baru mencoba mengoreksi kesalahan kumulatif dari pohon-pohon sebelumnya.
+    3.  Menggunakan teknik regularisasi (L1 dan L2) untuk mencegah *overfitting*.
+- **Parameter Utama yang Digunakan:**
+    - `use_label_encoder=False`: Untuk menonaktifkan penggunaan otomatis `LabelEncoder` oleh XGBoost, sesuai dengan praktik terbaru.
+    - `eval_metric='logloss'`: Metrik yang digunakan untuk evaluasi selama proses *training* jika set validasi disediakan. *Logloss* adalah metrik yang baik untuk klasifikasi biner.
+    - Parameter lain menggunakan nilai default dari library XGBoost.
+- **Kelebihan:** Performa sangat tinggi, efisiensi komputasi yang baik, fleksibilitas dalam tuning parameter.
+- **Kekurangan:** Lebih banyak parameter untuk di-tuning, bisa rentan *overfitting* jika tidak di-tuning dengan hati-hati.
 
 ### 3. Artificial Neural Network (ANN)
-- Arsitektur: 4 hidden layers (256 → 128 → 64 → 32) dengan aktivasi ReLU, dropout, dan batch normalization.
-- Output layer: sigmoid (karena binary classification).
-- Optimizer: Adam dengan learning rate 0.001.
-- EarlyStopping digunakan untuk menghindari overfitting.
-- Keunggulan: Kemampuan menangkap pola kompleks.
-- Kelemahan: Membutuhkan banyak data, sensitif terhadap skala dan noise.
+Artificial Neural Network (ANN) adalah model yang terinspirasi dari struktur jaringan saraf biologis. ANN terdiri dari lapisan-lapisan neuron yang saling terhubung, di mana setiap koneksi memiliki bobot yang dapat disesuaikan.
+
+- **Cara Kerja:**
+    1.  Data input dimasukkan ke *input layer*.
+    2.  Setiap neuron di *hidden layer* menerima input dari neuron di layer sebelumnya, mengalikannya dengan bobot koneksi, menjumlahkannya, menambahkan bias, dan kemudian meneruskannya melalui fungsi aktivasi.
+    3.  Proses ini berlanjut melalui semua *hidden layer* hingga mencapai *output layer*, yang menghasilkan prediksi akhir.
+    4.  Selama pelatihan, bobot disesuaikan menggunakan algoritma optimasi (seperti Adam) dan *backpropagation* untuk meminimalkan fungsi kerugian (*loss function*).
+- **Arsitektur dan Konfigurasi yang Digunakan:**
+    - Model dibangun menggunakan Keras `Sequential` API.
+    - **Input Layer:** Implisit ditentukan oleh `input_shape=(X_train.shape[1],)` pada layer Dense pertama.
+    - **Hidden Layers:**
+        - Layer 1: `Dense(256, activation='relu')`
+            - `Dense`: Layer *fully connected* dengan 256 unit/neuron.
+            - `activation='relu'`: Fungsi aktivasi ReLU (Rectified Linear Unit), $f(x) = \max(0, x)$. Membantu mengatasi *vanishing gradient problem* dan komputasinya cepat.
+        - `BatchNormalization()`: Menormalisasi output dari layer sebelumnya. Mempercepat konvergensi, menstabilkan pembelajaran, dan memiliki efek regularisasi ringan.
+        - `Dropout(0.4)`: Secara acak menonaktifkan 40% unit input selama iterasi pelatihan untuk mencegah *overfitting*.
+        - Layer 2: `Dense(128, activation='relu')`, diikuti `BatchNormalization()`, dan `Dropout(0.4)`.
+        - Layer 3: `Dense(64, activation='relu')`, diikuti `BatchNormalization()`, dan `Dropout(0.3)`.
+        - Layer 4: `Dense(32, activation='relu')`, diikuti `Dropout(0.2)`.
+    - **Output Layer:**
+        - `Dense(1, activation='sigmoid')`: Layer output dengan 1 unit/neuron.
+        - `activation='sigmoid'`: Fungsi aktivasi Sigmoid, $f(x) = 1 / (1 + e^{-x})$, menghasilkan output antara 0 dan 1. Cocok untuk klasifikasi biner sebagai probabilitas kelas positif.
+- **Kompilasi Model:**
+    - `optimizer='adam'`: Algoritma optimasi Adam, efisien dan adaptif.
+    - `loss='binary_crossentropy'`: Fungsi kerugian untuk klasifikasi biner, mengukur perbedaan antara distribusi probabilitas aktual dan prediksi.
+    - `metrics=['accuracy']`: Akurasi dipantau selama pelatihan dan evaluasi.
+- **Pelatihan:**
+    - `epochs=50`, `batch_size=64`, `validation_split=0.2`.
+    - `EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)`: Menghentikan pelatihan jika `val_loss` tidak membaik selama 5 epoch berturut-turut, dan mengembalikan bobot terbaik untuk mencegah *overfitting*.
+- **Kelebihan:** Kemampuan mempelajari pola kompleks dan non-linear.
+- **Kekurangan:** Membutuhkan banyak data, sensitif terhadap penskalaan fitur, bisa menjadi *black box*, risiko *overfitting* jika tidak dikelola baik.
 
 ### Pemilihan Model Terbaik
-Setelah dibandingkan berdasarkan metrik evaluasi (lihat bagian Evaluasi), **Random Forest** dipilih sebagai model terbaik karena menghasilkan skor **F1 score** yang tinggi secara konsisten dan performa seimbang antara precision dan recall. Model ini juga menunjukkan pentingnya fitur-fitur dengan lebih jelas, yang membantu interpretabilitas.
+Setelah dibandingkan berdasarkan metrik evaluasi (lihat bagian Evaluasi), **Random Forest** dipilih sebagai model terbaik untuk kasus ini. Meskipun semua model menunjukkan performa yang kompetitif, Random Forest memberikan F1-score yang sedikit lebih tinggi untuk prediksi kelas pembatalan (`is_canceled`) dan keseimbangan yang baik antara precision dan recall untuk kelas tersebut.
 
 ## Evaluation
 
@@ -252,6 +293,9 @@ Setelah dibandingkan berdasarkan metrik evaluasi (lihat bagian Evaluasi), **Rand
 Karena permasalahan merupakan klasifikasi biner (apakah pemesanan dibatalkan atau tidak), digunakan metrik berikut:
 
 - **Accuracy**: Proporsi prediksi yang benar terhadap seluruh data.
+    ```math
+  \text{Accuracy} = \frac{\text{TP} + \text{TN}}{\text{TP} + \text{TN} + \text{FP} + \text{FN}}
+  ```
 - **Precision**: Proporsi prediksi positif yang benar-benar positif.
   ```math
   \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
@@ -266,51 +310,85 @@ Karena permasalahan merupakan klasifikasi biner (apakah pemesanan dibatalkan ata
   ```
 
 ### Hasil Evaluasi:
+Berikut adalah ringkasan performa model pada data uji, dengan fokus pada metrik untuk kelas `is_canceled = 1` (pembatalan) dan akurasi keseluruhan:
 
-| Model         | Accuracy | Precision |  Recall  | F1 Score |
+| Model         | Accuracy | Precision | Recall   | F1 Score |
 |---------------|----------|-----------|----------|----------|
-| Random Forest | **0.89** | **0.89**  | **0.89** | **0.89** |
-| XGBoost       | 0.88     | 0.87      | 0.88     | 0.87     |
-| ANN           | 0.86     | 0.86      | 0.86     | 0.86     |
+| Random Forest | **0.84** | **0.83**  | **0.84** | **0.83** |
+| XGBoost       | 0.83     | 0.83      | 0.83     | 0.83     |
+| ANN           | 0.82     | 0.81      | 0.82     | 0.82     |
 
 ### Interpretasi:
 
 #### Random Forest
-- F1 Score tertinggi (0.89) → artinya seimbang antara precision dan recall.
-- Precision class 1 = 0.88 → 88% prediksi pembatalan benar.
-- Recall class 1 = 0.80 → hanya 80% dari seluruh pembatalan berhasil diprediksi.
-- Ini model paling stabil dan andal di semua metrik.
+- F1 Score untuk prediksi pembatalan adalah **0.83**, yang menunjukkan keseimbangan terbaik antara precision dan recall untuk mengidentifikasi pembatalan.
+- Precision sekitar **0.83**: Dari semua reservasi yang diprediksi akan batal oleh model ini, sekitar **83%** di antaranya memang benar-benar batal.
+- Recall sekitar **0.84**: Model ini berhasil mengidentifikasi sekitar **84%** dari semua reservasi yang seharusnya batal.
+- Model ini menunjukkan performa paling stabil dan andal di semua metrik yang relevan untuk target bisnis.
 
 #### XGBoost
-- Sedikit lebih rendah dari Random Forest di semua metrik.
-- Recall class 1 = 0.80 dan precision class 1 = 0.85 → cukup bagus.
-- Meskipun lebih rendah sedikit, XGBoost bisa lebih unggul setelah tuning lebih lanjut.
+- Menunjukkan performa yang baik, dengan F1 Score **0.83**.
+- Precision sekitar **0.83** dan Recall sekitar **0.83**.
+- Meskipun sedikit di bawah Random Forest pada metrik utama, XGBoost tetap merupakan model yang kuat dan bisa menjadi alternatif dengan tuning lebih lanjut.
 
 #### ANN
-- Performa paling rendah di antara ketiganya.
-- Recall class 1 = 0.75 → berarti banyak pembatalan yang gagal dikenali (false negative tinggi).
-- F1 Score = 0.86 → artinya trade-off antara precision dan recall tidak sebaik dua model lain.
+- Performa sedikit di bawah dua model berbasis pohon, dengan F1 Score **0.82**.
+- Recall sekitar **0.82**, menunjukkan bahwa model ini mungkin melewatkan lebih banyak kasus pembatalan aktual dibandingkan dua model lainnya.
 
 ### Fitur Penting
+Analisis *feature importance* dilakukan untuk setiap model untuk memahami faktor-faktor mana yang paling berpengaruh dalam prediksi pembatalan. Berikut adalah ringkasan fitur-fitur teratas (Top 5) dari masing-masing model:
 
-| Fitur                            | Random Forest | XGBoost | ANN  |
-|----------------------------------|---------------|---------|------|
-| `deposit_type`                   | 2nd           | 1nd     | 3rd  |
-| `country`                        | 3rd           | 6th     | 1st  |
-| `market_segment`                 | 6th           | 5th     | 5th  |
-| `total_of_special_requests`      | 8th           | 4th     | 2nd  |
-| `previous_cancellations`         | 9th           | 3rd     | 9th  |
-| `lead_time`                      | 1st           | -       | 4th  |
-| `customer_type`                  | -             | 7th     | 7th  |
-| `reserved_room_type`             | -             | 8th     | 8th  |
-| `arrival_date_year`              | -             | 9th     | 6th  |
-| `adr`                            | 4th           | -       | -    |
-| `arrival_date_day_of_month`      | 5th           | -       | -    |
-| `arrival_date_week_number`       | 7th           | -       | -    |
-| `required_car_parking_spaces`    | -             | 2nd     | -    |
-| `stays_in_week_nights`           | 10th          | -       | -    |
-| `previous_bookings_not_canceled` | -             | 10th    | -    |
-| `assigned_room_type`             | -             | -       | 10th |
+| Peringkat | Random Forest                 | XGBoost                          | ANN (Permutation Importance)  |
+|-----------|-------------------------------|----------------------------------|-------------------------------|
+| 1         | `lead_time`                   | `required_car_parking_spaces`    | `total_of_special_requests`   |
+| 2         | `adr`                         | `room_type_changed`              | `lead_time`                   |
+| 3         | `country`                     | `deposit_type`                   | `country`                     |
+| 4         | `arrival_date_month`          | `market_segment`                 | `market_segment`              |
+| 5         | `stays_in_week_nights`        | `total_of_special_requests`      | `room_type_changed`           |
+| 6         | `total_of_special_requests`   | `previous_cancellations`         | `required_car_parking_spaces` |
+| 7         | `market_segment`              | `country`                        | `adr`                         |
+| 8         | `stays_in_weekend_nights`     | `customer_type`                  | `customer_type`               |
+| 9         | `room_type_changed`           | `lead_time`                      | `hotel`                       |
+| 10        | `required_car_parking_spaces` | `previous_bookings_not_canceled` | `previous_cancellations`      |
+
+Fitur seperti `lead_time`, `country`, `total_of_special_requests`, `market_segment`, `required_car_parking_spaces`, dan `room_type_changed` secara konsisten muncul sebagai faktor penting di berbagai model, menunjukkan relevansi mereka yang kuat terhadap prediksi pembatalan.
+
+### Keterkaitan Hasil Evaluasi dengan Business Understanding
+
+Evaluasi model yang telah dilakukan tidak hanya menghasilkan metrik performa, tetapi juga memberikan wawasan yang relevan dengan tujuan bisnis dan masalah yang ingin dipecahkan.
+
+**1. Menjawab Problem Statements:**
+   - **"Apakah pelanggan akan membatalkan reservasi hotelnya?"**
+     Model yang dikembangkan, khususnya Random Forest dengan F1-score sekitar **0.83** untuk prediksi pembatalan, menunjukkan kemampuan yang baik dalam memprediksi kemungkinan pelanggan akan membatalkan reservasi. Ini memberikan alat bagi hotel untuk mengantisipasi pembatalan.
+   - **"Fitur apa yang paling memengaruhi pembatalan reservasi?"**
+     Analisis *feature importance* dari ketiga model secara konsisten menunjukkan beberapa fitur kunci seperti `lead_time`, `country`, `total_of_special_requests`, `market_segment`, `required_car_parking_spaces`, dan `room_type_changed` memiliki pengaruh signifikan terhadap keputusan pembatalan. Informasi ini sangat berharga bagi hotel untuk memahami faktor-faktor risiko.
+   - **"Bagaimana cara meningkatkan akurasi prediksi pembatalan?"**
+     Dengan mengembangkan dan membandingkan tiga model machine learning yang berbeda, proyek ini telah mengeksplorasi cara untuk mendapatkan prediksi yang akurat dan seimbang. Pemilihan Random Forest sebagai model terbaik menunjukkan langkah konkret dalam mencapai performa yang lebih baik dibandingkan jika hanya menggunakan satu model atau pendekatan sederhana.
+
+**2. Pencapaian Goals Proyek:**
+   - **"Memprediksi probabilitas pembatalan pemesanan."**
+     Tercapai. Model klasifikasi yang dibangun (terutama output dari ANN dengan fungsi sigmoid, atau metode `predict_proba` pada Random Forest dan XGBoost) dapat menghasilkan skor probabilitas yang dapat digunakan untuk menilai risiko pembatalan setiap reservasi.
+   - **"Mengidentifikasi fitur paling berpengaruh dalam keputusan pembatalan."**
+     Tercapai. Hasil analisis *feature importance* telah disajikan dan diinterpretasi, memberikan pemahaman mengenai faktor-faktor utama yang mendorong pembatalan.
+   - **"Menemukan model prediktif terbaik."**
+     Tercapai. Melalui evaluasi komparatif, Random Forest diidentifikasi sebagai model dengan performa terbaik di antara yang diuji, berdasarkan F1-score untuk kelas target.
+
+**3. Dampak Solusi yang Direncanakan:**
+   - **"Melakukan prediksi dengan algoritma machine learning."**
+     Solusi ini telah berhasil diimplementasikan. Model-model machine learning mampu mempelajari pola dari data historis untuk membuat prediksi.
+   - **"Mengukur performa dengan akurasi, precision, recall, dan F1-score."**
+     Solusi ini telah berhasil diterapkan. Metrik-metrik tersebut memberikan ukuran kuantitatif mengenai seberapa baik model bekerja.
+   - **"Menggunakan beragam algoritma (Random Forest, ANN, dan XGBoost)."**
+     Solusi ini telah berhasil dilaksanakan, memungkinkan perbandingan dan pemilihan model yang paling sesuai.
+
+   **Dampak Bisnis yang Dihasilkan:**
+   Dengan kemampuan model (misalnya, Random Forest) untuk memprediksi pembatalan, hotel dapat memperoleh manfaat bisnis yang signifikan:
+   - **Manajemen Risiko yang Lebih Baik:** Hotel dapat mengidentifikasi reservasi berisiko tinggi lebih awal. Hal ini memungkinkan tindakan proaktif, seperti menerapkan strategi *overbooking* yang lebih cerdas dan terukur untuk kamar yang diprediksi akan kosong, sehingga memaksimalkan okupansi dan pendapatan.
+   - **Optimalisasi Pendapatan:** Dengan prediksi yang lebih akurat, hotel dapat mengurangi kerugian akibat pembatalan mendadak. Jika reservasi diprediksi batal, kamar tersebut dapat ditawarkan kembali ke pasar lebih cepat.
+   - **Peningkatan Pengalaman Tamu (Potensial):** Untuk reservasi yang diprediksi tidak batal dan memiliki permintaan khusus (`total_of_special_requests` sebagai fitur penting), hotel dapat lebih fokus memastikan permintaan tersebut terpenuhi.
+   - **Strategi Pemasaran dan Kebijakan yang Lebih Tepat Sasaran:** Pemahaman fitur penting seperti `market_segment` tertentu menunjukkan tingkat pembatalan tinggi, strategi khusus dapat dirancang untuk segmen tersebut.
+   Secara keseluruhan, implementasi model prediktif ini memberikan landasan bagi pengambilan keputusan yang lebih *data-driven* dalam operasional hotel, yang berpotensi meningkatkan efisiensi dan profitabilitas.
+
 
 ## Referensi
 
