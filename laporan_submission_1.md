@@ -75,8 +75,12 @@ Beberapa poin penting mengenai kondisi awal dataset terebut:
   - Kolom ```agent``` dan ```company``` memiliki cukup banyak nilai kosong, sehingga dipertimbangkan untuk dihapus.
   - Kolom ```children``` dan ```country``` memiliki nilai kosong yang cukup rendah. Karena umumnya lebih sering tamu jarang membawa anak, maka nilai kosong pada kolom ```children``` akan diisi nol. Sementara nilai kosong pada kolom ```country``` akan diisi oleh nilai dengan jumlah terbanyak.
 - **Data Duplikat**
+  
   Ditemukan sebanyak 3.195 baris duplikat dalam data.
+
 - **Data Outlier**
+
+  Ditemukan bahwa outlier
 
 ### Variabel-variabel pada Hotel booking demand dataset adalah sebagai berikut:
 - hotel : Jenis Penginapan (H1 = Hotel Resor or H2 = Hotel Kota)
