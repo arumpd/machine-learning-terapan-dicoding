@@ -73,8 +73,10 @@ Beberapa poin penting mengenai kondisi awal dataset terebut:
     -  ```reservation_status_date```
 
 - **Missing Values**
-  - Kolom ```agent``` dan ```company``` memiliki cukup banyak nilai kosong, sehingga dipertimbangkan untuk dihapus.
-  - Kolom ```children``` dan ```country``` memiliki nilai kosong yang cukup rendah. Karena umumnya lebih sering tamu jarang membawa anak, maka nilai kosong pada kolom ```children``` akan diisi nol. Sementara nilai kosong pada kolom ```country``` akan diisi oleh nilai dengan jumlah terbanyak.
+  - Kolom ```children``` memiliki 4 nilai kosong (sedikit). Karena umumnya lebih sering tamu jarang membawa anak, maka nilai kosong pada kolom tersebut akan diisi nol.
+  - Kolom ```country``` memiliki 488 nilai kosong (sedikit), sehingga nilai kosong pada kolom ```country``` akan diisi oleh nilai dengan jumlah terbanyak.
+  - Kolom ```agent``` memiliki 16.340 nilai kosong (cukup banyak), sehingga fitur dipertimbangkan untuk dihapus.
+  - Kolom ```company``` memiliki 112.593 nilai kosong (cukup banyak), sehingga fitur dipertimbangkan untuk dihapus.
 
 - **Data Duplikat**
   
