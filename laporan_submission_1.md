@@ -80,25 +80,25 @@ Beberapa poin penting mengenai kondisi awal dataset terebut:
 
 - **Data Duplikat**
   
-  Ditemukan sebanyak 3.195 baris duplikat dalam data.
+  Ditemukan sebanyak 31.994 baris duplikat dalam data.
 
 - **Data Outlier**
 
   Ditemukan adanya outlier pada beberapa fitur, yaitu:
-  - ```lead_time```: 3005
+  - ```lead_time```: 3.005
   - ```stays_in_weekend_nights```: 265
-  - ```stays_in_week_nights```: 3354
-  - ```adults```: 29710
-  - ```children```: 8590
+  - ```stays_in_week_nights```: 3.354
+  - ```adults```: 29.710
+  - ```children```: 8.590
   - ```babies```: 917
-  - ```is_repeated_guest```: 3810
-  - ```previous_cancellations```: 6484
-  - ```previous_bookings_not_canceled```: 3620
-  - ```booking_changes```: 18076
-  - ```days_in_waiting_list```: 3698
-  - ```adr```: 3793
-  - ```required_car_parking_spaces```: 7416
-  - ```total_of_special_requests```: 2877
+  - ```is_repeated_guest```: 3.810
+  - ```previous_cancellations```: 6.484
+  - ```previous_bookings_not_canceled```: 3.620
+  - ```booking_changes```: 18.076
+  - ```days_in_waiting_list```: 3.698
+  - ```adr```: 3.793
+  - ```required_car_parking_spaces```: 7.416
+  - ```total_of_special_requests```: 2.877
 
 ### Variabel-variabel pada Hotel booking demand dataset adalah sebagai berikut:
 - hotel : Jenis Penginapan (H1 = Hotel Resor or H2 = Hotel Kota)
@@ -206,6 +206,8 @@ Pada tahap ini, dilakukan serangkaian teknik data preparation untuk memastikan d
    - `arrival_date_week_number`, karena umumnya tidak terlalu berkontribusi pada pembatalan.
    - `arrival_date_day_of_month`, karena umumnya tidak terlalu berkontribusi pada pembatalan.
    - `booking_changes`, karena bisa menyebabkan kebocoran (data leakage).
+   - `reservation_status`, karena nilainya (`Canceled`, `Check-Out`, `No-Show`) langsung mencerminkan hasil akhir.
+   - `reservation_status_date`, karena menunjukkan tanggal ketika status pemesanan terakhir diperbarui.
 
 3. **Penanganan Missing Values:**
    - Kolom `children` diisi dengan 0 karena kemungkinan besar merupakan input kosong (tanpa anak).
